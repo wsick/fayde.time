@@ -1,0 +1,31 @@
+{
+  "name": "fayde.time",
+  "client": {
+    "tests": [
+      {
+        "file": "test/fayde.json",
+        "lib": "test/lib",
+        "exclude": [
+          "qunit"
+        ]
+      },
+      {
+        "file": "testsite/fayde.json",
+        "lib": "testsite/lib",
+        "exclude": [
+          "qunit"
+        ]
+      }
+    ]
+  },
+  "type": "lib",
+  "dist": "dist/fayde.time",
+  "library": {
+    "type": "export",
+    "exports": "Fayde.Time"
+  },
+  "themes": {},
+  "typings": [
+    "dist/fayde.time.d.ts"
+  ]
+}

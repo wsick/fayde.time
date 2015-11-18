@@ -1,0 +1,15 @@
+{
+  "libs": {
+    "fayde.time": {
+      "exports": "Fayde.Time",
+      "base": "lib/fayde.time"
+    }
+  },
+  "themes": {
+    "fayde.time": {}
+  },
+  "debug": {
+    "warnMissingThemes": false,
+    "warnBrokenPath": false
+  }
+}
