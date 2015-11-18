@@ -10,12 +10,13 @@
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <StackPanel>
-            <HyperlinkButton TargetName="ContentFrame" NavigateUri="/test1" Content="Test 1" />
+            <HyperlinkButton TargetName="ContentFrame" NavigateUri="/datepicker" Content="Date Picker" />
+            <HyperlinkButton TargetName="ContentFrame" NavigateUri="/timepicker" Content="Time Picker" />
         </StackPanel>
         <Frame x:Name="ContentFrame" Grid.Column="1">
             <Frame.UriMapper>
                 <UriMapper>
-                    <UriMapping Uri="" MappedUri="Views/test1.fayde" />
+                    <UriMapping Uri="" MappedUri="Views/datepicker.fayde" />
                     <UriMapping Uri="/{pageName}" MappedUri="Views/{pageName}.fayde" />
                 </UriMapper>
             </Frame.UriMapper>

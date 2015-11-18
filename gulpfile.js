@@ -7,6 +7,7 @@ var fs = require('fs'),
         src: [
             'typings/*.d.ts',
             'src/_version.ts',
+            'src/_Library.ts',
             'src/**/*.ts'
         ].concat(typings({includeSelf: false})),
         scaffolds: [

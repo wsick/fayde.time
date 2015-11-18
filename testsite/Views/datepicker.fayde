@@ -1,0 +1,8 @@
+<Page xmlns="http://schemas.wsick.com/fayde"
+      xmlns:x="http://schemas.wsick.com/fayde/x"
+      xmlns:time="lib://fayde.time"
+      Title="DatePicker Demo">
+    <StackPanel Margin="5">
+        <time:DatePicker />
+    </StackPanel>
+</Page>
