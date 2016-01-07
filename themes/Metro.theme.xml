@@ -652,12 +652,12 @@
                             </TextElement.Foreground>
                         </ContentPresenter>
                         <Rectangle x:Name="CalendarButtonFocusVisual" Visibility="Collapsed" IsHitTestVisible="false" RadiusX="1" RadiusY="1" Stroke="#FF45D6FA"/>
+                        <!--<Grid.Triggers>
+                            <TriggerAction Property="IsFocused" Value="True">
+                                <Setter TargetName="CalendarButtonFocusVisual" Property="Visibility" Value="Visible" />
+                            </TriggerAction>
+                        </Grid.Triggers>-->
                     </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsFocused" Value="True">
-                            <Setter TargetName="CalendarButtonFocusVisual" Property="Visibility" Value="Visible" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -669,24 +669,20 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:CalendarItem">
-                    <ControlTemplate.Resources>
-                        <!-- Start: Data template for header button -->
-                        <DataTemplate x:Key="DayTitleTemplate">
-                            <TextBlock
-                                                FontWeight="Bold" 
-                                                FontFamily="Verdana" 
-                                                FontSize="9.5" 
-                                                Foreground="#FF333333" 
-                                                HorizontalAlignment="Center"
-                                                Text="{Binding}"
-                                                Margin="0,6,0,6"
-                                                VerticalAlignment="Center"/>
-                                        </DataTemplate>
-                        <!-- End: Data template for header button -->
-                    </ControlTemplate.Resources>
                     <Grid Name="PART_Root" >
                         <Grid.Resources>
                             <SolidColorBrush x:Key="DisabledColor" Color="#A5FFFFFF" />
+                            <DataTemplate x:Key="DayTitleTemplate">
+                                <TextBlock
+                                    FontWeight="Bold" 
+                                    FontFamily="Verdana" 
+                                    FontSize="9.5" 
+                                    Foreground="#FF333333" 
+                                    HorizontalAlignment="Center"
+                                    Text="{Binding}"
+                                    Margin="0,6,0,6"
+                                    VerticalAlignment="Center"/>
+                            </DataTemplate>
                         </Grid.Resources>
                         <vsm:VisualStateManager.VisualStateGroups>
                             <vsm:VisualStateGroup x:Name="CommonStates">
@@ -788,34 +784,35 @@
                             </Border>
                         </Border>
                         <Rectangle x:Name="PART_DisabledVisual" Opacity="0" Visibility="Collapsed" Stretch="Fill" StrokeThickness="1" RadiusX="2" RadiusY="2" Stroke="{StaticResource DisabledColor}" Fill="{StaticResource DisabledColor}"/>
+                       <!--
+                        <Grid.Triggers>
+                            <TriggerAction Property="IsEnabled" Value="False">
+                                <Setter TargetName="PART_DisabledVisual" Property="Visibility" Value="Visible" />
+                            </TriggerAction>
+                            <DataTrigger Value="Year">
+                                <DataTrigger.Binding>
+                                    <Binding Path="DisplayMode">
+                                        <Binding.RelativeSource>
+                                            <RelativeSource Mode="FindAncestor" AncestorType="{x:Type local:Calendar}" />
+                                        </Binding.RelativeSource>
+                                    </Binding>
+                                </DataTrigger.Binding>
+                                <Setter TargetName="PART_MonthView" Property="Visibility" Value="Hidden" />
+                                <Setter TargetName="PART_YearView" Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                            <DataTrigger Value="Decade">
+                                <DataTrigger.Binding>
+                                    <Binding Path="DisplayMode">
+                                        <Binding.RelativeSource>
+                                            <RelativeSource Mode="FindAncestor" AncestorType="{x:Type local:Calendar}" />
+                                        </Binding.RelativeSource>
+                                    </Binding>
+                                </DataTrigger.Binding>
+                                <Setter TargetName="PART_MonthView" Property="Visibility" Value="Hidden" />
+                                <Setter TargetName="PART_YearView" Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Grid.Triggers>-->
                     </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="PART_DisabledVisual" Property="Visibility" Value="Visible" />
-                        </Trigger>
-                        <DataTrigger Value="Year">
-                            <DataTrigger.Binding>
-                                <Binding Path="DisplayMode">
-                                    <Binding.RelativeSource>
-                                        <RelativeSource Mode="FindAncestor" AncestorType="{x:Type local:Calendar}" />
-                                    </Binding.RelativeSource>
-                                </Binding>
-                            </DataTrigger.Binding>
-                            <Setter TargetName="PART_MonthView" Property="Visibility" Value="Hidden" />
-                            <Setter TargetName="PART_YearView" Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                        <DataTrigger Value="Decade">
-                            <DataTrigger.Binding>
-                                <Binding Path="DisplayMode">
-                                    <Binding.RelativeSource>
-                                        <RelativeSource Mode="FindAncestor" AncestorType="{x:Type local:Calendar}" />
-                                    </Binding.RelativeSource>
-                                </Binding>
-                            </DataTrigger.Binding>
-                            <Setter TargetName="PART_MonthView" Property="Visibility" Value="Hidden" />
-                            <Setter TargetName="PART_YearView" Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>        
