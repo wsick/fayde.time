@@ -282,7 +282,7 @@ module Fayde.Time {
 		
         
         //INTERNAL METHODS
-        protected UpdateMonthMode(): void
+        public UpdateMonthMode(): void
         {
             this.SetMonthModeHeaderButton();
             this.SetMonthModePreviousButton();

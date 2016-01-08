@@ -21,9 +21,13 @@ module Fayde.Time {
         public BlackoutDates: CalendarBlackoutDatesCollection<CalendarDateRange>;
         public SelectedDates: SelectedDatesCollection<DateTime>;
         public DisplayDateInternal: DateTime;
+
+        private _currentDate: DateTime;
         
         private _monthControl: CalendarItem;
-        private _currentDate: DateTime;
+        public get MonthControl(): CalendarItem{
+            return this._monthControl;
+        }
         
         //CurrentDate
         private get CurrentDate() : DateTime {
@@ -57,9 +61,40 @@ module Fayde.Time {
             }
 
             this.CurrentDate = this.DisplayDate;
-            
+            this.UpdateCellItems();
             
         }
+        
+        private UpdateCellItems(){
+            var monthControl = this.MonthControl;
+            if (monthControl != null)
+            {
+                switch (this.DisplayMode)
+                {
+                    case CalendarMode.Month:
+                    {
+                        monthControl.UpdateMonthMode();
+                        break;
+                    }
+
+                    case CalendarMode.Year:
+                    {
+                        //monthControl.UpdateYearMode();
+                        break;
+                    }
+
+                    case CalendarMode.Decade:
+                    {
+                        //monthControl.UpdateDecadeMode();
+                        break;
+                    }
+
+                    default: 
+                        break;
+                }
+            }
+        }
+        
         
 	}
 }

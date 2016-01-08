@@ -89,8 +89,7 @@ module Fayde.Time {
 		
 		SetContentInternal(value: string): void
         {
-			this._shouldCoerceContent = true;
-            this._coercedContent = value;
+			this.Content = value;
 			//TODO SHOULD BE LIKE THIS
 			/*
             if (BindingOperations.GetBindingExpressionBase(this, ContentControl.ContentProperty) != null)
