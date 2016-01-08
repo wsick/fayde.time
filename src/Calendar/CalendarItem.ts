@@ -1,3 +1,4 @@
+/// <reference path="DateTimeHelper" />
 module Fayde.Time {
 	
 	import Control = Fayde.Controls.Control;
@@ -222,7 +223,7 @@ module Fayde.Time {
                     }
                 }
 
-                for (var i = 1; i < this.ROWS; i++)
+                for (var i = 0; i < this.ROWS; i++)
                 {
                     for (var j = 0; j < this.COLS; j++)
                     {
@@ -370,11 +371,11 @@ module Fayde.Time {
             var count = this.ROWS * this.COLS;
             for (var childIndex = this.COLS; childIndex < count; childIndex++)
             {
-                var childButton = <CalendarDayButton>this._monthView.Children[childIndex];
+                var childButton = <CalendarDayButton>this._monthView.Children.GetValueAt(childIndex);
                 var dayOffset = childIndex - lastMonthToDisplay - this.COLS;
                 if ((!isMinMonth || (dayOffset >= 0)) && (!isMaxMonth || (dayOffset < daysInMonth)))
                 {
-                    var dateToAdd = <DateTime>firstDayOfMonth.AddDays(dayOffset);
+                    var dateToAdd = firstDayOfMonth.AddDays(dayOffset);
                     this.SetMonthModeDayButtonState(childButton, dateToAdd);
                     childButton.DataContext = dateToAdd;
                     childButton.SetContentInternal(DateTimeHelper.ToDayString(dateToAdd, culture));

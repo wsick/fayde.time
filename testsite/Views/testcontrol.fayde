@@ -3,6 +3,6 @@
       xmlns:time="lib://fayde.time"
       Title="Test Zone Demo Beware">
     <StackPanel Margin="5">
-        <time:CalendarItem Width="40" Height="40" Content="10"/>
+        <time:Calendar/>
     </StackPanel>
 </Page>

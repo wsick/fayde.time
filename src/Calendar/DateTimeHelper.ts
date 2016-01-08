@@ -6,6 +6,7 @@ module Fayde.Time {
     
     export class DateTimeHelper{
         
+        static Current = new DateTimeHelper();
 		
 		private cal: GregorianCalendar;
 		

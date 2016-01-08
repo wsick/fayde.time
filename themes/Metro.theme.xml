@@ -338,6 +338,36 @@
         </Setter>
     </Style>
     
+    <!--Calendar-->
+    <Style TargetType="controls:Calendar">
+        <Setter Property="Foreground" Value="#FF333333" />
+        <Setter Property="Background" Value="#FF02814D" />
+        <Setter Property="BorderBrush">
+            <Setter.Value>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FFA3AEB9" Offset="0"/>
+                    <GradientStop Color="#FF8399A9" Offset="0.375"/>
+                    <GradientStop Color="#FF718597" Offset="0.375"/>
+                    <GradientStop Color="#FF617584" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="BorderThickness" Value="1"></Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:Calendar">
+                    <StackPanel Name="PART_Root" HorizontalAlignment="Center">
+                        <!--Style="{TemplateBinding CalendarItemStyle}"-->
+                        <controls:CalendarItem 
+                            Name="PART_CalendarItem"
+                            Background="{TemplateBinding Background}" 
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}"/>
+                    </StackPanel>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
     <!-- Start: Previous button template -->
     <ControlTemplate x:Key="PreviousButtonTemplate" TargetType="Button">
@@ -435,7 +465,7 @@
     
     <!--CalendarDayButton-->
     <Style TargetType="controls:CalendarDayButton">
-        <Setter Property="Background" Value="#FFBADDE9"/>
+        <Setter Property="Background" Value="#FF0A216E"/>
         <Setter Property="MinWidth" Value="5"/>
         <Setter Property="MinHeight" Value="5"/>
         <Setter Property="FontSize" Value="10"/>
@@ -669,7 +699,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:CalendarItem">
-                    <Grid Name="PART_Root" >
+                    <Grid Name="PART_Root" Background="#FFF73F3F" Width="170" Height="200">
                         <Grid.Resources>
                             <SolidColorBrush x:Key="DisabledColor" Color="#A5FFFFFF" />
                             <DataTemplate x:Key="DayTitleTemplate">
