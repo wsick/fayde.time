@@ -64,6 +64,48 @@ module Fayde.Time{
 
                 return this._maximumDate;
         }
+        
+        public ClearInternal(fireChangeNotification: boolean): void
+        {
+            if (this.Count > 0)
+            {
+                for(var i = 0;i < this.Count;i++)
+                {
+                    var item = this.GetValueAt(i);
+                    
+                    this._removedItems.Add(item);
+                    
+                }
+
+                //TODO THIS SHOULD BE
+                //base.ClearItems();
+                this.Clear();
+                this.ClearMinMax();
+
+                if (fireChangeNotification)
+                {
+                    if (this._owner.SelectedDate != null)
+                    {
+                        this._owner.SelectedDate = null;
+                    }
+
+                    if (this._removedItems.Count > 0)
+                    {
+                        //TODO var addedItems = new Collection<DateTime>();
+                        //TODO RaiseSelectionChanged(_removedItems, addedItems);
+                        this._removedItems.Clear();
+                    }
+
+                    this._owner.UpdateCellItems();
+                }
+            }
+        }
+        
+        private ClearMinMax(): void
+        {
+            this._maximumDate = null;
+            this._minimumDate = null;
+        }
 
 	}
 }
