@@ -1,4 +1,7 @@
 /// <reference path="DateTimeHelper" />
+/// <reference path="CalendarDayButton" />
+/// <reference path="CalendarButton" />
+/// <reference path="Calendar" />
 module Fayde.Time {
 	
 	import Control = Fayde.Controls.Control;
@@ -100,7 +103,8 @@ module Fayde.Time {
             this._nextButton = <Button>this.GetTemplateChild(CalendarItem.ElementNextButton);
             this._headerButton = <Button>this.GetTemplateChild(CalendarItem.ElementHeaderButton);
             this._disabledVisual = <FrameworkElement>this.GetTemplateChild(CalendarItem.ElementDisabledVisual);
-
+            var root = <Grid>this.XamlNode.TemplateRoot;
+            this._dayTitleTemplate = root.Resources.Get(CalendarItem.ElementDayTitleTemplate);;
             //TODO
             
             /*
@@ -213,17 +217,14 @@ module Fayde.Time {
                 {
                     for (var i = 0; i < this.COLS; i++)
                     {
-                        //TODO UNCOMMENT THIS
-                        /*
-                        var titleCell = <FrameworkElement>this._dayTitleTemplate.LoadContent();
+                        var titleCell = this._dayTitleTemplate.GetVisualTree(this);
                         titleCell.SetValue(Grid.RowProperty, 0);
                         titleCell.SetValue(Grid.ColumnProperty, i);
                         this._monthView.Children.Add(titleCell);
-                        */
                     }
                 }
 
-                for (var i = 0; i < this.ROWS; i++)
+                for (var i = 1; i < this.ROWS; i++)
                 {
                     for (var j = 0; j < this.COLS; j++)
                     {

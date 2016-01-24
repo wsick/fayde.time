@@ -58,6 +58,18 @@ module Fayde.Time {
 		constructor() {
             super();
             this.DefaultStyleKey = CalendarDayButton;
+            this.MouseEnter.on(this.OnMouseEnter,this);
+            this.MouseLeave.on(this.OnMouseLeave,this);
+        }
+        
+        private isMouseOver: boolean;
+        OnMouseEnter(e:Input.MouseEventArgs) :void {
+            this.isMouseOver = true;
+            this.UpdateVisualState();
+        }
+        OnMouseLeave(e:Input.MouseEventArgs) :void {
+            this.isMouseOver = false;
+            this.UpdateVisualState();
         }
 		
 		//TODO PENDING AUTOMATATION PEER
@@ -113,8 +125,14 @@ module Fayde.Time {
              this.GoToStateBlackoutDay(gotoFunc);
          } 
  
- 
          GoToStateCommon (gotoFunc: (state: string) => boolean): boolean { 
+             
+             if(this.isMouseOver)
+             {
+                 return gotoFunc("MouseOver"); 
+             }
+             
+             
              if (!this.IsEnabled) 
                  return gotoFunc("Disabled"); 
 
@@ -157,8 +175,8 @@ module Fayde.Time {
     { GroupName: "CommonStates", Name: "Disabled" },
 	{ GroupName: "SelectionStates", Name: "Unselected" },
     { GroupName: "SelectionStates", Name: "Selected" },
-    { GroupName: "CalendarButtonFocusStates", Name: "CalendarButtonUnfocused" },
-    { GroupName: "CalendarButtonFocusStates", Name: "CalendarButtonFocused" },
+    { GroupName: "FocusStates", Name: "Unfocused" },
+    { GroupName: "FocusStates", Name: "Focused" },
     { GroupName: "ActiveStates", Name: "Inactive" },
     { GroupName: "ActiveStates", Name: "Active" },
     { GroupName: "DayStates", Name: "RegularDay" },

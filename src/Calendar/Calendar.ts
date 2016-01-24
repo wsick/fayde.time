@@ -1,9 +1,11 @@
 /// <reference path="CalendarMode" />
+/// <reference path="CalendarItem" />
 /// <reference path="CalendarSelectionMode" />
 /// <reference path="DateTimeHelper" />
 module Fayde.Time {
     import Control = Fayde.Controls.Control;
     import CalendarMode = Time.CalendarMode;
+    import CalendarItem = Time.CalendarItem;
     import CalendarSelectionMode = Time.CalendarSelectionMode;
     import CalendarBlackoutDatesCollection = Time.CalendarBlackoutDatesCollection;
     import SelectedDatesCollection = Time.SelectedDatesCollection;
@@ -12,6 +14,9 @@ module Fayde.Time {
         //CONSTANTS
         public static get ElementRoot():string {return "PART_Root";}
         public static get ElementMonth(): string { return "PART_CalendarItem";}
+        
+        static CalendarItemStyleProperty = DependencyProperty.Register("CalendarItemStyle", () => Style, Calendar);
+        public CalendarItemStyle: Style;
         
         static DisplayDateProperty = DependencyProperty.Register("DisplayDate", () => DateTime, Calendar, NaN, (d, args) => (<Calendar>d).OnDisplayDateChanged(args));
         public DisplayDate: DateTime;
@@ -95,7 +100,7 @@ module Fayde.Time {
             {
                 var addedDate = e.NewValue;
 
-                if (this.IsValidDateSelection(this, addedDate))
+                if (Calendar.IsValidDateSelection(this, addedDate))
                 {
                     if (!addedDate.HasValue)
                     {
@@ -181,7 +186,7 @@ module Fayde.Time {
             }
 
             super.OnApplyTemplate();
-            this._monthControl = <CalendarItem>this.GetTemplateChild(Calendar.ElementMonth);
+            this._monthControl = <CalendarItem>this.GetTemplateChild(Calendar.ElementMonth, CalendarItem);
 
             if (this._monthControl != null)
             {
@@ -223,10 +228,13 @@ module Fayde.Time {
             }
         }
         
-        private IsValidDateSelection(cal:Calendar,value: any ): boolean
+        public static IsValidDateSelection(cal:Calendar,value: any ): boolean
         {
             return (value == null) || (!cal.BlackoutDates.Contains(value));
         }
+        
+        //INTERNALS
+        DatePickerDisplayDateFlag: boolean;
         
 	}
 }
