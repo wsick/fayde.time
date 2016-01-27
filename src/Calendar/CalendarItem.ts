@@ -149,14 +149,14 @@ module Fayde.Time {
             if (this.Owner != null)
             {
                 //TODO
-                /*
+                
                 switch (this.Owner.DisplayMode)
                 {
                     case CalendarMode.Year: 
-                        this.UpdateYearMode(); 
+                        //this.UpdateYearMode(); 
                         break;
                     case CalendarMode.Decade: 
-                        this.UpdateDecadeMode(); 
+                        //this.UpdateDecadeMode(); 
                         break;
                     case CalendarMode.Month: 
                         this.UpdateMonthMode(); 
@@ -165,7 +165,7 @@ module Fayde.Time {
                     default: 
                         break;
                 }
-                */
+                
             }
             else
             {
@@ -190,7 +190,7 @@ module Fayde.Time {
 
                 if (count > 0)
                 {
-                    var child = <CalendarButton>yearViewChildren[0];
+                    var child = <CalendarButton>yearViewChildren.GetValueAt(0);
                     if (child && <DateTime>child.DataContext && (<DateTime>child.DataContext).Year == selectedYear.Year)
                     {
                         return (decade + 10);
@@ -199,7 +199,7 @@ module Fayde.Time {
 
                 if (count > 1)
                 {
-                    var child = <CalendarButton>yearViewChildren[count - 1];
+                    var child = <CalendarButton>yearViewChildren.GetValueAt(count-1);
                     if (child && <DateTime>child.DataContext && (<DateTime>child.DataContext).Year == selectedYear.Year)
                     {
                         return (decade - 10);
@@ -318,7 +318,7 @@ module Fayde.Time {
 
                 for (var childIndex = 0; childIndex < this.COLS; childIndex++)
                 {
-                    var daytitle = this._monthView.Children[childIndex] as FrameworkElement;
+                    var daytitle = this._monthView.Children.GetValueAt(childIndex);
                     
                     if (daytitle != null && shortestDayNames != null && shortestDayNames.length > 0)
                     {
@@ -489,7 +489,7 @@ module Fayde.Time {
 
                 for (var childIndex = this.COLS; childIndex < count; childIndex++)
                 {
-                    var childButton = <CalendarDayButton>this._monthView.Children[childIndex];
+                    var childButton = <CalendarDayButton>this._monthView.Children.GetValueAt(childIndex);
                     if (<DateTime>childButton.DataContext)
                     {
                         var date = <DateTime>childButton.DataContext;
@@ -509,7 +509,7 @@ module Fayde.Time {
 
                 for (var childIndex = this.COLS; childIndex < count; childIndex++)
                 {
-                    var childButton = <CalendarDayButton>this._monthView.Children[childIndex];
+                    var childButton = <CalendarDayButton>this._monthView.Children.GetValueAt(childIndex);
                     childButton.SetValue(CalendarDayButton.IsHighlightedProperty, false);
                 }
             }

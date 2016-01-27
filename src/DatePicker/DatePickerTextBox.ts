@@ -19,6 +19,7 @@ module Fayde.Time {
         
         constructor() {
             super();
+            this.Watermark = "Select a date";
             this.DefaultStyleKey = DatePickerTextBox;
             this.Loaded.on(this.OnLoaded,this);
             this.GotFocus.on(this.OnGotFocus,this);

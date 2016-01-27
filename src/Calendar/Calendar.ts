@@ -2,6 +2,8 @@
 /// <reference path="CalendarItem" />
 /// <reference path="CalendarSelectionMode" />
 /// <reference path="DateTimeHelper" />
+/// <reference path="CalendarBlackoutDatesCollection" />
+/// <reference path="SelectedDatesCollection" />
 module Fayde.Time {
     import Control = Fayde.Controls.Control;
     import CalendarMode = Time.CalendarMode;
@@ -21,6 +23,7 @@ module Fayde.Time {
         static DisplayDateProperty = DependencyProperty.Register("DisplayDate", () => DateTime, Calendar, NaN, (d, args) => (<Calendar>d).OnDisplayDateChanged(args));
         public DisplayDate: DateTime;
         private OnDisplayDateChanged(args: IDependencyPropertyChangedEventArgs) {
+            this.DisplayDateInternal = DateTimeHelper.DiscardDayTime(args.NewValue);
             this.UpdateCellItems();
         }
         
@@ -146,10 +149,9 @@ module Fayde.Time {
         
         public HoverStart: DateTime;
         public HoverEnd: DateTime;
-        public DisplayDateStartInternal: DateTime;
-        public DisplayDateEndInternal: DateTime;
-        public BlackoutDates: CalendarBlackoutDatesCollection<CalendarDateRange>;
-        public SelectedDates: SelectedDatesCollection<DateTime>;
+        
+        public BlackoutDates: CalendarBlackoutDatesCollection<any>;
+        public SelectedDates: SelectedDatesCollection<any>;
         public DisplayDateInternal: DateTime;
 
         private _currentDate: DateTime;
@@ -158,6 +160,24 @@ module Fayde.Time {
         public get MonthControl(): CalendarItem{
             return this._monthControl;
         }
+        
+        public get DisplayDateStartInternal(): DateTime{
+            if(!this.DisplayDateStart){
+                return DateTimeHelper.MinValue;
+            }else{
+                return this.DisplayDateStart;
+            }
+            
+         };
+         
+         public get DisplayDateEndInternal(): DateTime{
+            if(!this.DisplayDateEnd){
+                return DateTime.MaxValue;
+            }else{
+                return this.DisplayDateEnd;
+            }
+            
+         };
         
         //CurrentDate
         private get CurrentDate() : DateTime {
@@ -174,8 +194,8 @@ module Fayde.Time {
             super();
             this.DefaultStyleKey = Calendar;
             //TODO
-            //TODO this.BlackoutDates = new CalendarBlackoutDatesCollection<CalendarDateRange>();
-            //TODO this.SelectedDates = new SelectedDatesCollection<DateTime>();
+            this.BlackoutDates = new CalendarBlackoutDatesCollection<CalendarDateRange>();
+            this.SelectedDates = new SelectedDatesCollection<DateTime>();
         }
         
         OnApplyTemplate() {

@@ -3,21 +3,28 @@
 /// <reference path="../Calendar/Calendar" />
 /// <reference path="../Calendar/CalendarSelectionChangedEventArgs" />
 /// <reference path="Dictionary"/>
+/// <reference path="../Enums" />
 module Fayde.Time {
     import Control = Fayde.Controls.Control;
     import TextBox = Fayde.Controls.TextBox;
     import TemplateParts = Fayde.Controls.TemplateParts;
     import TemplateVisualStates = Fayde.Controls.TemplateVisualStates;
     import ObservableCollection = Fayde.Collections.ObservableCollection;
+    import Button = Fayde.Controls.Button;
+    import Overlay = Fayde.Controls.Primitives.Overlay;
+    import DatePickerFormat = Fayde.Time.DatePickerFormat;
 
     export class DatePicker extends Control {
         
         //CONSTANTS
+        public static get ElementRoot():string {return "PART_Root";}
         public static get ElementTextBox():string {return "PART_TextBox";}
+        public static get ElementButton():string {return "PART_Button";}
+        public static get ElementPopup():string {return "PART_Popup";}
         
         static IsTodayHighlightedProperty = DependencyProperty.Register("IsTodayHighlighted", () => Boolean, DatePicker);
         static SelectedDateFormatProperty = DependencyProperty.Register("SelectedDateFormat", () => DatePickerFormat, DatePicker, DatePickerFormat.Long, (d, args) => (<DatePicker>d).OnSelectedDateFormatChanged(args));
-        static SelectedDateProperty = DependencyProperty.Register("SelectedDate", () => Number, DatePicker, NaN, (d, args) => (<DatePicker>d).OnSelectedDateChanged(args));
+        static SelectedDateProperty = DependencyProperty.Register("SelectedDate", () => Number, DatePicker, null, (d, args) => (<DatePicker>d).OnSelectedDateChanged(args));
         static DisplayDateStartProperty = DependencyProperty.RegisterFull("DisplayDateStart", () => DateTime, DatePicker, NaN, 
         (d, args) => (<DatePicker>d).OnDisplayDateStartChanged(args),
         (d, dprop,val) => (<DatePicker>d).CoerceDisplayDateStart(d,val),undefined);
@@ -27,13 +34,21 @@ module Fayde.Time {
         static DisplayDateProperty = DependencyProperty.RegisterFull("DisplayDate", () => DateTime, DatePicker, "", 
         undefined,
         (d, dprop,val) => (<DatePicker>d).CoerceDisplayDate(d,val),undefined);
+        static IsDropDownOpenProperty = DependencyProperty.RegisterFull("IsDropDownOpen", () => Boolean, DatePicker, false, 
+        (d, args) => (<DatePicker>d).OnIsDropDownOpenChanged(args),
+        (d, dprop,val) => (<DatePicker>d).OnCoerceIsDropDownOpen(d,val),undefined);
+        static FirstDayOfWeekProperty = DependencyProperty.Register("FirstDayOfWeek", () => DayOfWeek, DatePicker,
+        DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek, 
+        (d, args) => (<DatePicker>d).OnFirstDayOfWeekChanged(args));
         IsTodayHighlighted: boolean;
         SelectedDateFormat: DatePickerFormat;
         SelectedDate: DateTime;
         DisplayDateStart: DateTime;
         Text: string;
         DisplayDate: DateTime;
-        
+        IsDropDownOpen: boolean;
+        FirstDayOfWeek: DayOfWeek;
+                
         SelectedDateChangedEvent = new RoutedEvent<CalendarSelectionChangedEventArgs>();
         
         private OnTextChanged(args: IDependencyPropertyChangedEventArgs) {
@@ -171,14 +186,65 @@ module Fayde.Time {
             */
         }
         
+        private OnCoerceIsDropDownOpen(d: DependencyObject,baseValue: any): any
+        {
+            if (!this.IsEnabled)
+            {
+                return false;
+            }
+
+            return baseValue;
+        }
+
+        /// <summary>
+        /// IsDropDownOpenProperty property changed handler.
+        /// </summary>
+        /// <param name="d">DatePicker that changed its IsDropDownOpen.</param>
+        /// <param name="e">DependencyPropertyChangedEventArgs.</param>
+        private  OnIsDropDownOpenChanged(e: DependencyPropertyChangedEventArgs): void
+        {
+
+            var newValue = <boolean>e.NewValue;
+            if (this._popUp != null && this._popUp.IsOpen != newValue)
+            {
+                this._popUp.IsOpen = newValue;
+                if (newValue)
+                {
+                    this._originalSelectedDate = this.SelectedDate;
+                    // When the popup is opened set focus to the DisplayDate button. 
+                    // Do this asynchronously because the IsDropDownOpen could 
+                    // have been set even before the template for the DatePicker is 
+                    // applied. And this would mean that the visuals wouldn't be available yet.
+                     this._calendar.Focus();
+                    // TODO
+                    /*
+                    this.Dispatcher.BeginInvoke(DispatcherPriority.Input, (Action)delegate()
+                    {
+                        
+                        // setting the focus to the calendar will focus the correct date.
+                        this._calendar.Focus();
+                    });*/
+
+                }
+            }
+        }
+        
+        private  OnFirstDayOfWeekChanged(e: DependencyPropertyChangedEventArgs): void
+        {
+            this._calendar.UpdateCellItems();
+        }
+        
         
         private _calendar: Calendar;
         private _defaultText: string;
         private _textBox: DatePickerTextBox;
-        //private _isHandlerSuspended: IDictionary<DependencyProperty, bool>;
+        private _popUp: Overlay;
+        private _disablePopupReopen: boolean;
+        private _dropDownButton: Button;
         private _isHandlerSuspended: Dictionary;
         private _shouldCoerceText: boolean;
         private _coercedTextValue: string;
+        private _originalSelectedDate: DateTime;
         
         /*
         static SelectedMonthProperty = DependencyProperty.Register("SelectedMonth", () => Number, DatePicker, NaN, (d, args) => (<DatePicker>d).OnSelectedMonthChanged(args));
@@ -228,11 +294,68 @@ module Fayde.Time {
         constructor() {
             super();
             this.DefaultStyleKey = DatePicker;
+            this.InitializeCalendar();
+            this._defaultText = "";
+
+            // Binding to FirstDayOfWeek and DisplayDate wont work
+            this.FirstDayOfWeek = DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek;
+            this.DisplayDate = DateTime.Today;
         }
 
         OnApplyTemplate() {
             super.OnApplyTemplate();
+            
+            this._popUp = <Overlay>this.GetTemplateChild(DatePicker.ElementPopup);
+
+            if (this._popUp != null)
+            {
+                //this._popUp.AddHandler(PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(PopUp_PreviewMouseLeftButtonDown));
+                this._popUp.Opened.on(this.PopUp_Opened,this);
+                this._popUp.Closed.on(this.PopUp_Closed,this);
+                this._popUp.Visual = this._calendar;
+
+                if (this.IsDropDownOpen)
+                {
+                    this._popUp.IsOpen = true;
+                }
+            }
+
+            this._dropDownButton = <Button>this.GetTemplateChild(DatePicker.ElementButton);
+            if (this._dropDownButton != null)
+            {
+                this._dropDownButton.Click.on(this.DropDownButton_Click,this);
+                //TODO this._dropDownButton.AddHandler(MouseLeaveEvent, new MouseEventHandler(DropDownButton_MouseLeave), true);
+
+            }
+
             this._textBox = <DatePickerTextBox>this.GetTemplateChild(DatePicker.ElementTextBox);
+
+            this.UpdateDisabledVisual();
+            if (this.SelectedDate === null)
+            {
+                this.SetWaterMarkText();
+            }
+
+            if (this._textBox != null)
+            {
+                //TODO this._textBox.AddHandler(TextBox.KeyDownEvent, new KeyEventHandler(TextBox_KeyDown), true);
+                //TODO this._textBox.AddHandler(TextBox.TextChangedEvent, new TextChangedEventHandler(TextBox_TextChanged), true);
+                //TODO this._textBox.AddHandler(TextBox.LostFocusEvent, new RoutedEventHandler(TextBox_LostFocus), true);
+
+                if (this.SelectedDate == null)
+                {
+                    if (!this._defaultText)
+                    {
+                        this._textBox.Text = this._defaultText;
+                        this.SetSelectedDate();
+                    }
+                }
+                else
+                {
+                    this._textBox.Text = this.DateTimeToString(this.SelectedDate);
+                }
+            }
+            
             /*
             this._MonthGesture.Detach();
             this._MonthTextBox = <TextBox>this.GetTemplateChild("MonthTextBox", TextBox);
@@ -296,6 +419,37 @@ module Fayde.Time {
                 this._YearTextBox.Text = formatNumber(this.SelectedYear, 4, "YYYY");
         }*/
         
+        PopUp_Opened(e:RoutedEventArgs) :void {
+            if (!this.IsDropDownOpen)
+            {
+                this.IsDropDownOpen = true;
+            }
+
+            if (this._calendar != null)
+            {
+                this._calendar.DisplayMode = CalendarMode.Month;
+                //TODO this._calendar.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+            }
+
+            this.OnCalendarOpened(new RoutedEventArgs());
+        }
+        
+        PopUp_Closed(e:RoutedEventArgs) :void {
+            if (!this.IsDropDownOpen)
+            {
+                this.IsDropDownOpen = false;
+            }
+
+            //TODO
+            /*
+            if (this._calendar.IsKeyboardFocusWithin)
+            {
+                this.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+            }*/
+
+            this.OnCalendarClosed(new RoutedEventArgs());
+        }
+        
         private SetWaterMarkText(): void
         {
             if (this._textBox != null)
@@ -304,21 +458,15 @@ module Fayde.Time {
                 this.SetTextInternal("");
                 this._defaultText = "";
 
-                switch (this.SelectedDateFormat)
+                if(this.SelectedDateFormat == DatePickerFormat.Long)
                 {
-                    case DatePickerFormat.Long:
-                        {
-                            //TODO this._textBox.Watermark = string.Format(CultureInfo.CurrentCulture, SR.Get(SRID.DatePicker_WatermarkText), dtfi.LongDatePattern.ToString());
-                            this._textBox.Watermark = "yyyy/MM/dd"
-                            break;
-                        }
-
-                    case DatePickerFormat.Short:
-                        {
-                            //TODO this._textBox.Watermark = string.Format(CultureInfo.CurrentCulture, SR.Get(SRID.DatePicker_WatermarkText), dtfi.ShortDatePattern.ToString());
-                            this._textBox.Watermark = "yy/MM/dd"
-                            break;
-                        }
+                    //TODO this._textBox.Watermark = string.Format(CultureInfo.CurrentCulture, SR.Get(SRID.DatePicker_WatermarkText), dtfi.LongDatePattern.ToString());
+                    this._textBox.Watermark = "yyyy/MM/dd"
+                }
+                else
+                {
+                    //TODO this._textBox.Watermark = string.Format(CultureInfo.CurrentCulture, SR.Get(SRID.DatePicker_WatermarkText), dtfi.ShortDatePattern.ToString());
+                    this._textBox.Watermark = "yy/MM/dd"
                 }
             }
         }
@@ -518,6 +666,84 @@ module Fayde.Time {
                     }
                 }
             }
+        }
+        
+        private  UpdateDisabledVisual(): void
+        {
+            if (!this.IsEnabled)
+            {
+                //TODO VisualStates.GoToState(this, true, VisualStates.StateDisabled, VisualStates.StateNormal);
+            }
+            else
+            {
+                //TODO VisualStates.GoToState(this, true, VisualStates.StateNormal);
+            }
+        }
+        
+        private DropDownButton_Click(sender: any,e: RoutedEventArgs): void
+        {
+            this.TogglePopUp();
+        }
+        
+        private DropDownButton_MouseLeave(sender: any,e: Input.MouseEventArgs): void
+        {
+            this._disablePopupReopen = false;
+        }
+
+        private TogglePopUp(): void
+        {
+            if (this.IsDropDownOpen)
+            {
+                this.IsDropDownOpen = false;
+            }
+            else
+            {
+                if (this._disablePopupReopen)
+                {
+                    this._disablePopupReopen = false;
+                }
+                else
+                {
+                    this.SetSelectedDate();
+                    this.IsDropDownOpen = true;
+                }
+            }
+        }
+        
+        OnCalendarClosed(e: RoutedEventArgs): void
+        {
+            /*
+            RoutedEventHandler handler = this.CalendarClosed;
+            if (null != handler)
+            {
+                handler(this, e);
+            }*/
+        }
+
+        OnCalendarOpened(e: RoutedEventArgs): void
+        {/*
+            RoutedEventHandler handler = this.CalendarOpened;
+            if (null != handler)
+            {
+                handler(this, e);
+            }*/
+        }
+        
+        private InitializeCalendar()
+        {
+            this._calendar = new Calendar();
+            //this._calendar.DayButtonMouseUp += new MouseButtonEventHandler(Calendar_DayButtonMouseUp);
+            //this._calendar.DisplayDateChanged += new EventHandler<CalendarDateChangedEventArgs>(Calendar_DisplayDateChanged);
+            //this._calendar.SelectedDatesChanged += new EventHandler<SelectionChangedEventArgs>(Calendar_SelectedDatesChanged);
+            //this._calendar.DayOrMonthPreviewKeyDown += new RoutedEventHandler(CalendarDayOrMonthButton_PreviewKeyDown);
+            //this._calendar.HorizontalAlignment = HorizontalAlignment.Left;
+            //this._calendar.VerticalAlignment = VerticalAlignment.Top;
+
+            this._calendar.SelectionMode = CalendarSelectionMode.SingleDate;
+            //this._calendar.SetBinding(Calendar.ForegroundProperty, GetDatePickerBinding(DatePicker.ForegroundProperty));            
+            //this._calendar.SetBinding(Calendar.StyleProperty, GetDatePickerBinding(DatePicker.CalendarStyleProperty));
+            //this._calendar.SetBinding(Calendar.IsTodayHighlightedProperty, GetDatePickerBinding(DatePicker.IsTodayHighlightedProperty));
+            //this._calendar.SetBinding(Calendar.FirstDayOfWeekProperty, GetDatePickerBinding(DatePicker.FirstDayOfWeekProperty));
         }
         
     }

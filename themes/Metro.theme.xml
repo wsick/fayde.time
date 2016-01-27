@@ -335,11 +335,13 @@
                                     </Grid.ColumnDefinitions>
                                     <Rectangle Grid.Row="0" Grid.Column="0" RadiusX="1" RadiusY="1" Fill="#A5FFFFFF"/>
                                     <Rectangle Grid.Row="0" Grid.Column="1" RadiusX="1" RadiusY="1" Fill="#A5FFFFFF" Height="18" Width="19" Margin="3,0,3,0" />
-                                    <Popup x:Name="PART_Popup" 
+                                    <Overlay x:Name="PART_Popup" >
+                                    </Overlay>
+                                    <!--<Popup x:Name="PART_Popup" 
                                            PlacementTarget="{Binding ElementName=PART_Button}"
                                            Placement="Bottom" 
                                            StaysOpen="False"
-                                           AllowsTransparency="True" />
+                                           AllowsTransparency="True" />-->
                                 </Grid>
                             </Grid>
                         </Border.Child>
