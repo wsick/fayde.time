@@ -163,7 +163,7 @@ module Fayde.Time {
         
         public get DisplayDateStartInternal(): DateTime{
             if(!this.DisplayDateStart){
-                return DateTimeHelper.MinValue;
+                return new DateTime(1980,1,1);
             }else{
                 return this.DisplayDateStart;
             }
