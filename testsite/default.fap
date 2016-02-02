@@ -12,6 +12,7 @@
         <StackPanel>
             <HyperlinkButton TargetName="ContentFrame" NavigateUri="/datepicker" Content="Date Picker" />
             <HyperlinkButton TargetName="ContentFrame" NavigateUri="/timepicker" Content="Time Picker" />
+            <HyperlinkButton TargetName="ContentFrame" NavigateUri="/testcontrol" Content="Test zone beware"/>
         </StackPanel>
         <Frame x:Name="ContentFrame" Grid.Column="1">
             <Frame.UriMapper>
