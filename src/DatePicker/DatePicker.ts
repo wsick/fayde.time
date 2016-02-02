@@ -132,8 +132,8 @@ module Fayde.Time {
         }
         private OnSelectedDateChanged(args: IDependencyPropertyChangedEventArgs) {
             
-            var addedItems = new Array<DateTime>();
-            var removedItems = new Array<DateTime>();
+            var addedItems = new ObservableCollection<DateTime>();
+            var removedItems = new ObservableCollection<DateTime>();
             var addedDate:DateTime;
             var removedDate: DateTime;
 
@@ -166,12 +166,12 @@ module Fayde.Time {
 
             if (addedDate)
             {
-                addedItems.push(addedDate);
+                addedItems.Add(addedDate);
             }
 
             if (removedDate)
             {
-                removedItems.push(removedDate);
+                removedItems.Add(removedDate);
             }
 
             this.OnSelectedDateChangedSelection(new CalendarSelectionChangedEventArgs(undefined, removedItems, addedItems));
@@ -341,6 +341,8 @@ module Fayde.Time {
                 //TODO this._textBox.AddHandler(TextBox.KeyDownEvent, new KeyEventHandler(TextBox_KeyDown), true);
                 //TODO this._textBox.AddHandler(TextBox.TextChangedEvent, new TextChangedEventHandler(TextBox_TextChanged), true);
                 //TODO this._textBox.AddHandler(TextBox.LostFocusEvent, new RoutedEventHandler(TextBox_LostFocus), true);
+                this._textBox.TextChanged.on(this.TextBox_TextChanged,this);
+
 
                 if (this.SelectedDate == null)
                 {
@@ -419,6 +421,11 @@ module Fayde.Time {
                 this._YearTextBox.Text = formatNumber(this.SelectedYear, 4, "YYYY");
         }*/
         
+        private TextBox_TextChanged(sender:any,e: RoutedEventArgs): void
+        {
+            this.SetValueNoCallback(DatePicker.TextProperty, this._textBox.Text);
+        }
+        
         PopUp_Opened(e:RoutedEventArgs) :void {
             if (!this.IsDropDownOpen)
             {
@@ -461,12 +468,12 @@ module Fayde.Time {
                 if(this.SelectedDateFormat == DatePickerFormat.Long)
                 {
                     //TODO this._textBox.Watermark = string.Format(CultureInfo.CurrentCulture, SR.Get(SRID.DatePicker_WatermarkText), dtfi.LongDatePattern.ToString());
-                    this._textBox.Watermark = "yyyy/MM/dd"
+                    this._textBox.Watermark = dtfi.LongDatePattern.toString();
                 }
                 else
                 {
                     //TODO this._textBox.Watermark = string.Format(CultureInfo.CurrentCulture, SR.Get(SRID.DatePicker_WatermarkText), dtfi.ShortDatePattern.ToString());
-                    this._textBox.Watermark = "yy/MM/dd"
+                    this._textBox.Watermark = dtfi.ShortDatePattern.toString()
                 }
             }
         }
@@ -481,6 +488,7 @@ module Fayde.Time {
             {
                 this._shouldCoerceText = true;
                 this._coercedTextValue = value;
+                this.SetValue(DatePicker.TextProperty,value);
                 //TODO this.CoerceValue(DatePicker.TextProperty);
             }
         }
@@ -529,22 +537,18 @@ module Fayde.Time {
         private DateTimeToString(d: DateTime): string
         {
             var dtfi = DateTimeHelper.GetDateFormat(DateTimeHelper.GetCulture(this));
+            
+            var format = this.SelectedDateFormat+"";
 
-            switch (this.SelectedDateFormat)
+            if(format== DatePickerFormat[DatePickerFormat.Short])
             {
-                case DatePickerFormat.Short:
-                    {
-                        //TODO return string.format(CultureInfo.CurrentCulture, d.toString(dtfi.ShortDatePattern, dtfi));
-                        return d.toString();
-                    }
-
-                case DatePickerFormat.Long:
-                    {
-                        //TODO return string.format(CultureInfo.CurrentCulture, d.toString(dtfi.LongDatePattern, dtfi));
-                        return d.toString()
-                    }
-            }      
-
+                return d.toString(dtfi.ShortDatePattern);
+            }
+            else if(format == DatePickerFormat[DatePickerFormat.Long])
+            {
+                return d.toString(dtfi.LongDatePattern)
+            }
+            
             return null;
         }
         
@@ -734,7 +738,7 @@ module Fayde.Time {
             this._calendar = new Calendar();
             //this._calendar.DayButtonMouseUp += new MouseButtonEventHandler(Calendar_DayButtonMouseUp);
             //this._calendar.DisplayDateChanged += new EventHandler<CalendarDateChangedEventArgs>(Calendar_DisplayDateChanged);
-            //this._calendar.SelectedDatesChanged += new EventHandler<SelectionChangedEventArgs>(Calendar_SelectedDatesChanged);
+            this._calendar.SelectedDateChanged.on(this.Calendar_SelectedDatesChanged,this);
             //this._calendar.DayOrMonthPreviewKeyDown += new RoutedEventHandler(CalendarDayOrMonthButton_PreviewKeyDown);
             //this._calendar.HorizontalAlignment = HorizontalAlignment.Left;
             //this._calendar.VerticalAlignment = VerticalAlignment.Top;
@@ -744,6 +748,30 @@ module Fayde.Time {
             //this._calendar.SetBinding(Calendar.StyleProperty, GetDatePickerBinding(DatePicker.CalendarStyleProperty));
             //this._calendar.SetBinding(Calendar.IsTodayHighlightedProperty, GetDatePickerBinding(DatePicker.IsTodayHighlightedProperty));
             //this._calendar.SetBinding(Calendar.FirstDayOfWeekProperty, GetDatePickerBinding(DatePicker.FirstDayOfWeekProperty));
+        }
+        
+        private Calendar_SelectedDatesChanged(sender: any,e: CalendarSelectionChangedEventArgs): void
+        {
+            if (e.AddedItems.Count > 0 && this.SelectedDate && DateTime.Compare(e.AddedItems.GetValueAt(0), this.SelectedDate) != 0)
+            {
+                this.SelectedDate = e.AddedItems.GetValueAt(0);
+            }
+            else
+            {
+                if (e.AddedItems.Count == 0)
+                {
+                    this.SelectedDate = null;
+                    return;
+                }
+
+                if (!this.SelectedDate)
+                {
+                    if (e.AddedItems.Count > 0)
+                    {
+                        this.SelectedDate = e.AddedItems.GetValueAt(0);
+                    }
+                }
+            }
         }
         
     }

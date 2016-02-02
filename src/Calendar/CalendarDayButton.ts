@@ -121,7 +121,7 @@ module Fayde.Time {
              super.GoToStates(gotoFunc); 
              this.GoToStateSelection(gotoFunc); 
              this.GoToStateDay(gotoFunc);
-             this.GoToStateDay(gotoFunc); 
+             this.GoToStateActive(gotoFunc);
              this.GoToStateBlackoutDay(gotoFunc);
          } 
  
@@ -156,6 +156,14 @@ module Fayde.Time {
                  
              return gotoFunc("RegularDay");
              
+         } 
+         
+         GoToStateActive (gotoFunc: (state: string) => boolean): boolean { 
+             
+             if(!this.IsInactive)
+                return gotoFunc("Inactive");
+
+             return gotoFunc("Active");           
          } 
          
          GoToStateBlackoutDay (gotoFunc: (state: string) => boolean): boolean { 

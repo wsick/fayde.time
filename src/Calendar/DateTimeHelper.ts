@@ -232,7 +232,7 @@ module Fayde.Time {
             if (date && format != null)
             {
                 //TODO result = date.toString(format.YearMonthPattern, format);
-                result = date.toString();
+                result = date.toString(format.YearMonthPattern);
             }
 
             return result;
@@ -245,7 +245,7 @@ module Fayde.Time {
 
             if (date && format)
             {
-                //TODO result = date.Year.toString(format);
+                //TODO result = date.Year.toString();
                 result = date.Year.toString();
             }
 

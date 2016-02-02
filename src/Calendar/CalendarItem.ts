@@ -5,6 +5,7 @@
 module Fayde.Time {
 	
 	import Control = Fayde.Controls.Control;
+    import Keyboard = Fayde.Input.Keyboard;
 	import GregorianCalendar = Fayde.Localization.GregorianCalendar;
 	import Grid = Fayde.Controls.Grid;
 	import Button = Fayde.Controls.Button;
@@ -18,6 +19,7 @@ module Fayde.Time {
     import CalendarDayButton = Time.CalendarDayButton;
     import CalendarMode = Time.CalendarMode;
     import CultureInfo = Fayde.Localization.CultureInfo;
+    import ObservableCollection =  Fayde.Collections.ObservableCollection;
 	
 	export class CalendarItem extends Control {
 		//CONSTANTS
@@ -29,6 +31,8 @@ module Fayde.Time {
         public static get ElementMonthView(): string { return "PART_MonthView";}
         public static get ElementYearView(): string { return "PART_YearView";}
         public static get ElementDisabledVisual(): string { return "PART_DisabledVisual";}
+        
+        Owner: Calendar;
 		
 		private get COLS() : number { return 7;}
 		private get ROWS() : number { return 7;}
@@ -70,6 +74,14 @@ module Fayde.Time {
         private get DisplayDate(): DateTime
         {
             return (this.Owner != null) ? this.Owner.DisplayDate : DateTime.Today;
+        }
+        
+        get YearView(): Grid{
+            return this._yearView;
+        }
+        
+        get MonthView(): Grid{
+            return this._monthView;
         }
 		
 		constructor() {
@@ -114,6 +126,8 @@ module Fayde.Time {
             {
                 this._dayTitleTemplate = Template.Resources[ElementDayTitleTemplate] as DataTemplate;
             }
+    
+            */
             
             if (this._previousButton != null)
             {
@@ -121,10 +135,10 @@ module Fayde.Time {
                 // this text is not shown on the UI, just used for Accessibility purposes
                 if (this._previousButton.Content == null)
                 {
-                    this._previousButton.Content = SR.Get(SRID.Calendar_PreviousButtonName);
+                    //this._previousButton.Content = SR.Get(SRID.Calendar_PreviousButtonName);
                 }
 
-                this._previousButton.Click += new RoutedEventHandler(PreviousButton_Click);
+                this._previousButton.Click.on(this.PreviousButton_Click,this);
             }
 
             if (this._nextButton != null)
@@ -133,17 +147,17 @@ module Fayde.Time {
                 // this text is not shown on the UI, just used for Accessibility purposes
                 if (this._nextButton.Content == null)
                 {
-                    this._nextButton.Content = SR.Get(SRID.Calendar_NextButtonName);
+                    //this._nextButton.Content = SR.Get(SRID.Calendar_NextButtonName);
                 }
 
-                this._nextButton.Click += new RoutedEventHandler(NextButton_Click);
+                this._nextButton.Click.on(this.NextButton_Click,this);
             }
 
             if (this._headerButton != null)
             {
-                this._headerButton.Click += new RoutedEventHandler(HeaderButton_Click);
+                this._headerButton.Click.on(this.HeaderButton_Click,this);
             }
-            */
+            
             this.PopulateGrids();
 
             if (this.Owner != null)
@@ -153,10 +167,10 @@ module Fayde.Time {
                 switch (this.Owner.DisplayMode)
                 {
                     case CalendarMode.Year: 
-                        //this.UpdateYearMode(); 
+                        this.UpdateYearMode(); 
                         break;
                     case CalendarMode.Decade: 
-                        //this.UpdateDecadeMode(); 
+                        this.UpdateDecadeMode(); 
                         break;
                     case CalendarMode.Month: 
                         this.UpdateMonthMode(); 
@@ -174,7 +188,40 @@ module Fayde.Time {
 
         }
         
-        Owner: Calendar;
+        
+        
+        private HeaderButton_Click(sender: any,e: RoutedEventArgs): void
+        {
+            if (this.Owner != null)
+            {
+                if (this.Owner.DisplayMode == CalendarMode.Month)
+                {
+                    this.Owner.DisplayMode = CalendarMode.Year;
+                }
+                else
+                {
+                    this.Owner.DisplayMode = CalendarMode.Decade;
+                }
+
+                this.FocusDate(this.DisplayDate);
+            }
+        }
+
+        private PreviousButton_Click(sender: any,e: RoutedEventArgs): void
+        {
+            if (this.Owner != null)
+            {
+                this.Owner.OnPreviousClick();
+            }
+        }
+        
+        private NextButton_Click(sender: any,e: RoutedEventArgs): void
+        {
+            if (this.Owner != null)
+            {
+                this.Owner.OnNextClick();
+            }
+        }
         
         //PRIVATE METHODS
         private GetDecadeForDecadeMode(selectedYear:DateTime):number{
@@ -239,6 +286,7 @@ module Fayde.Time {
                         //dayCell.AddHandler(CalendarDayButton.MouseLeftButtonUpEvent, new MouseButtonEventHandler(Cell_MouseLeftButtonUp), true);
                         //dayCell.AddHandler(CalendarDayButton.MouseEnterEvent, new MouseEventHandler(Cell_MouseEnter), true);
                         //dayCell.Click += new RoutedEventHandler(Cell_Clicked);
+                        dayCell.Click.on(this.Cell_Clicked,this);
                         //dayCell.AddHandler(PreviewKeyDownEvent, new RoutedEventHandler(CellOrMonth_PreviewKeyDown), true);
 
                         this._monthView.Children.Add(dayCell);
@@ -266,6 +314,7 @@ module Fayde.Time {
                         //monthCell.AddHandler(CalendarButton.MouseEnterEvent, new MouseEventHandler(Month_MouseEnter), true);
                         //monthCell.AddHandler(UIElement.PreviewKeyDownEvent, new RoutedEventHandler(CellOrMonth_PreviewKeyDown), true);
                         //monthCell.Click += new RoutedEventHandler(Month_Clicked);
+                        monthCell.Click.on(this.Month_Clicked,this);
                         this._yearView.Children.Add(monthCell);
                         count++;
                     }
@@ -283,6 +332,106 @@ module Fayde.Time {
 		
         
         //INTERNAL METHODS
+        
+        public UpdateDecadeMode()
+        {
+            var selectedYear;
+
+            if (this.Owner != null)
+            {
+                selectedYear = this.Owner.DisplayYear;
+            }
+            else
+            {
+                selectedYear = DateTime.Today;
+            }
+
+            var decade = this.GetDecadeForDecadeMode(selectedYear);
+            var decadeEnd = decade + 9;
+
+            this.SetDecadeModeHeaderButton(decade);
+            this.SetDecadeModePreviousButton(decade);
+            this.SetDecadeModeNextButton(decadeEnd);
+
+            if (this._yearView != null)
+            {
+                this.SetYearButtons(decade, decadeEnd);
+                this._monthView.Visibility = Visibility.Collapsed;
+                this._yearView.Visibility = Visibility.Visible;
+            }
+        }
+        
+        private SetDecadeModeHeaderButton(decade: number): void
+        {
+            if (this._headerButton != null)
+            {
+                this._headerButton.Content = DateTimeHelper.ToDecadeRangeString(decade, DateTimeHelper.GetCulture(this));
+                this._headerButton.IsEnabled = false;
+            }
+        }
+
+        private SetDecadeModeNextButton(decadeEnd: number): void
+        {
+            if (this.Owner != null && this._nextButton != null)
+            {
+                this._nextButton.IsEnabled = (this.Owner.DisplayDateEndInternal.Year > decadeEnd);
+            }
+        }
+
+        private SetDecadeModePreviousButton(decade: number): void
+        {
+            if (this.Owner != null && this._previousButton != null)
+            {
+                this._previousButton.IsEnabled = (decade > this.Owner.DisplayDateStartInternal.Year);
+            }
+        }
+        
+        private SetYearButtons(decade: number,decadeEnd: number): void
+        {
+            var year;
+            var count = -1;
+            this._yearView.Children.ToArray().forEach(child => {
+                var childButton = <CalendarButton>child;
+                year = decade + count;
+
+                if (year <= DateTime.MaxValue.Year && year >= DateTime.MinValue.Year)
+                {
+                    // There should be no time component. Time is 12:00 AM
+                    var day = new DateTime(year, 1, 1);
+                    childButton.DataContext = day;
+                    childButton.SetContentInternal(DateTimeHelper.ToYearString(day, DateTimeHelper.GetCulture(this)));
+                    childButton.Visibility = Visibility.Visible;
+
+                    if (this.Owner != null)
+                    {
+                        childButton.HasSelectedDays = (this.Owner.DisplayDate.Year == year);
+
+                        if (year < this.Owner.DisplayDateStartInternal.Year || year > this.Owner.DisplayDateEndInternal.Year)
+                        {
+                            childButton.IsEnabled = false;
+                            childButton.Opacity = 0;
+                        }
+                        else
+                        {
+                            childButton.IsEnabled = true;
+                            childButton.Opacity = 1;
+                        }
+                    }
+
+                    // SET IF THE YEAR IS INACTIVE OR NOT: set if the year is a trailing year or not
+                    childButton.IsInactive = year < decade || year > decadeEnd;
+                }
+                else
+                {
+                    childButton.DataContext = null;
+                    childButton.IsEnabled = false;
+                    childButton.Opacity = 0;
+                }
+
+                count++;
+            });  
+        }
+        
         public UpdateMonthMode(): void
         {
             this.SetMonthModeHeaderButton();
@@ -294,6 +443,8 @@ module Fayde.Time {
                 this.SetMonthModeDayTitles();
                 this.SetMonthModeCalendarDayButtons();
                 this.AddMonthModeHighlight();
+                this._monthView.Visibility = Visibility.Visible;
+                this._yearView.Visibility = Visibility.Collapsed;
             }
         }
         
@@ -436,15 +587,14 @@ module Fayde.Time {
                         // SET IF THE DAY IS SELECTED OR NOT
                         // Since we should be comparing the Date values not DateTime values, we can't use this.Owner.SelectedDates.Contains(dateToAdd) directly
                         var isSelected = false;
-                        for(var i;i < this.Owner.SelectedDates.Count; i++)
-                        {
-                            var item = <DateTime>this.Owner.SelectedDates[i];
-                            isSelected = (DateTimeHelper.CompareDays(dateToAdd, item) == 0);  
-                        }
+                        
+                        this.Owner.SelectedDates.ToArray().forEach(item => {
+                            isSelected = (DateTimeHelper.CompareDays(dateToAdd, item) == 0); 
+                        });
                         /*
                         foreach (DateTime item in this.Owner.SelectedDates)
                         {
-                             isSelected |= (DateTimeHelper.CompareDays(dateToAdd.Value, item) == 0);       
+                             isSelected |= (DateTimeHelper.CompareDays(dateToAdd, item) == 0);       
                         }
                         */
                         childButton.SetValue(CalendarDayButton.IsSelectedProperty, isSelected);
@@ -543,6 +693,306 @@ module Fayde.Time {
                 var firstDayOfMonth = <DateTime>DateTimeHelper.DiscardDayTime(this.DisplayDate);
                 this._previousButton.IsEnabled = (DateTimeHelper.CompareDays(this.Owner.DisplayDateStartInternal, firstDayOfMonth) < 0);
             }
+        }
+        
+        private Cell_Clicked(sender: any,e: RoutedEventArgs): void
+        {
+            if (this.Owner == null)
+            {
+                return;
+            }
+
+            var b = <CalendarDayButton>sender;
+
+            if (!(<DateTime>b.DataContext))
+            {
+                return;
+            }
+
+            // If the day is a blackout day selection is not allowed
+            if (!b.IsBlackedOut)
+            {
+                var clickedDate = <DateTime>b.DataContext;
+                var ctrl: boolean, shift: boolean;
+                ctrl = Keyboard.HasControl();
+                shift = Keyboard.HasShift();
+
+                switch (this.Owner.SelectionMode)
+                {
+                    case CalendarSelectionMode.None:
+                    {
+                        break;
+                    }
+
+                    case CalendarSelectionMode.SingleDate:
+                    {
+                        if (!ctrl)
+                        {
+                            this.Owner.SelectedDate = clickedDate;
+                        }
+                        else
+                        {
+                            this.Owner.SelectedDates.Toggle(clickedDate);
+                        }
+
+                        break;
+                    }
+
+                    case CalendarSelectionMode.SingleRange:
+                        {
+                            var lastDate = this.Owner.CurrentDate;
+                            this.Owner.SelectedDates.ClearInternal(true /*fireChangeNotification*/);
+                            if (shift && lastDate)
+                            {
+                                this.Owner.SelectedDates.AddRangeInternal(lastDate, clickedDate);
+                            }
+                            else
+                            {
+                                this.Owner.SelectedDate = clickedDate;
+                                this.Owner.HoverStart = null;
+                                this.Owner.HoverEnd = null;
+                            }
+
+                            break;
+                        }
+
+                    case CalendarSelectionMode.MultipleRange:
+                        {
+                            if (!ctrl)
+                            {
+                                this.Owner.SelectedDates.ClearInternal(true /*fireChangeNotification*/);
+                            }
+
+                            if (shift)
+                            {
+                                this.Owner.SelectedDates.AddRangeInternal(this.Owner.CurrentDate, clickedDate);
+                            }
+                            else
+                            {
+                                if (!ctrl)
+                                {
+                                    this.Owner.SelectedDate = clickedDate;
+                                }
+                                else
+                                {
+                                    this.Owner.SelectedDates.Toggle(clickedDate);
+                                    this.Owner.HoverStart = null;
+                                    this.Owner.HoverEnd = null;
+                                }
+                            }
+
+                            break;
+                        }
+                }
+
+                this.Owner.OnDayClick(clickedDate);
+            }
+        }
+        
+        private Month_Clicked(sender: any,e: RoutedEventArgs): void
+        {
+            this.Owner.OnCalendarButtonPressed(sender, true);
+        }
+        
+        public FocusDate(date: DateTime): void
+        {
+            var focusTarget = null;
+
+            switch (this.DisplayMode)
+            {
+                case CalendarMode.Month:
+                {
+                    focusTarget = this.GetCalendarDayButton(date);
+                    break;
+                }
+
+                case CalendarMode.Year:
+                case CalendarMode.Decade:
+                {
+                    focusTarget = this.GetCalendarButton(date, this.DisplayMode);
+                    break;
+                }
+
+                default:
+                {
+                    break;
+                }
+            }
+
+            if (focusTarget != null && !focusTarget.IsFocused)
+            {
+                //TODO focusTarget.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+                focusTarget.Focus();
+            }
+        }
+        
+        private GetFocusedCalendarButton(): CalendarButton
+        {
+            
+            this.GetCalendarButtons().ToArray().forEach(b => {
+                if (b != null && b.IsFocused)
+                {
+                    return b;
+                }
+            });
+            return null;
+        }
+
+        private GetCalendarButtons(): ObservableCollection<CalendarButton> 
+        {   
+            var result = new ObservableCollection<CalendarButton>();
+            
+            this.YearView.Children.ToArray().forEach(element => {
+                var b = element as CalendarButton;
+                if (b != null)
+                {
+                    result.Add(b);
+                }
+            });  
+            
+            return result;    
+            
+        }
+        
+        private GetCalendarButton(date: DateTime, mode: CalendarMode): CalendarButton
+        {
+            var buttons = this.GetCalendarButtons().ToArray();
+            
+            buttons.forEach(b => {
+                if (b != null && b.DataContext)
+                {
+                    if (mode == CalendarMode.Year)
+                    {
+                        if (DateTimeHelper.CompareYearMonth(date,b.DataContext) == 0)
+                        {
+                            return b;
+                        }
+                    }
+                    else
+                    {
+                        if (date.Year == (b.DataContext).Year)
+                        {
+                            return b;
+                        }
+                    }
+                }
+            });  
+            return null;
+        }
+        
+        private GetCalendarDayButtons(): ObservableCollection<CalendarDayButton>
+        {
+            var result = new ObservableCollection<CalendarDayButton>();
+            // TODO: should be updated if we support MultiCalendar
+            var count = this.ROWS * this.COLS;
+            if (this.MonthView != null)
+            {
+                var dayButtonsHost = this.MonthView.Children;
+                for (var childIndex = this.COLS; childIndex < count; childIndex++)
+                {
+                    var b = dayButtonsHost[childIndex] as CalendarDayButton;
+                    if (b != null)
+                    {
+                        result.Add(b);
+                    }
+                }
+            }
+            
+            return result;
+        }
+        
+        private GetCalendarDayButton(date: DateTime): CalendarDayButton
+        {
+            
+            var buttons = this.GetCalendarDayButtons().ToArray();
+            
+            buttons.forEach(b => {
+                if (b != null && b.DataContext)
+                {
+                    if (DateTimeHelper.CompareDays(date,b.DataContext) == 0)
+                    {
+                        return b;
+                    }
+                }
+            });  
+            
+
+            return null;
+        }
+        
+        public UpdateYearMode(): void
+        {
+            this.SetYearModeHeaderButton();
+            this.SetYearModePreviousButton();
+            this.SetYearModeNextButton();
+
+            if (this._yearView != null)
+            {
+                this.SetYearModeMonthButtons();
+            }
+            
+            this._monthView.Visibility = Visibility.Collapsed;
+            this._yearView.Visibility = Visibility.Visible;
+            
+        }
+        
+        private SetYearModeHeaderButton(): void
+        {
+            if (this._headerButton != null)
+            {
+                this._headerButton.IsEnabled = true;
+                this._headerButton.Content = DateTimeHelper.ToYearString(this.DisplayDate, DateTimeHelper.GetCulture(this));
+            }
+        }
+        
+        private SetYearModeNextButton(): void
+        {
+            if (this.Owner != null && this._nextButton != null)
+            {
+                this._nextButton.IsEnabled = (this.Owner.DisplayDateEndInternal.Year != this.DisplayDate.Year);
+            }
+        }
+
+        private SetYearModePreviousButton(): void
+        {
+            if (this.Owner != null && this._previousButton != null)
+            {
+                this._previousButton.IsEnabled = (this.Owner.DisplayDateStartInternal.Year != this.DisplayDate.Year);
+            }
+        }
+        
+        private SetYearModeMonthButtons(): void
+        {
+            var count = 0;
+            this._yearView.Children.ToArray().forEach(child => {
+                var childButton = <CalendarButton>child;
+                
+                // There should be no time component. Time is 12:00 AM
+                var day = new DateTime(this.DisplayDate.Year, count + 1, 1);
+                childButton.DataContext = day;
+                childButton.SetContentInternal(DateTimeHelper.ToAbbreviatedMonthString(day,DateTimeHelper.GetCulture(this)));
+                childButton.Visibility = Visibility.Visible;
+
+                if (this.Owner != null)
+                {
+                    childButton.HasSelectedDays = (DateTimeHelper.CompareYearMonth(day, this.Owner.DisplayDateInternal) == 0);
+
+                    if (DateTimeHelper.CompareYearMonth(day, this.Owner.DisplayDateStartInternal) < 0 || DateTimeHelper.CompareYearMonth(day, this.Owner.DisplayDateEndInternal) > 0)
+                    {
+                        childButton.IsEnabled = false;
+                        childButton.Opacity = 0;
+                    }
+                    else
+                    {
+                        childButton.IsEnabled = true;
+                        childButton.Opacity = 1;
+                    }
+                }
+
+                childButton.IsInactive = false;
+                count++;
+            });  
+
         }
         
 	}

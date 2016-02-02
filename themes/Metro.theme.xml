@@ -238,21 +238,28 @@
                                         <SolidColorBrush Color="#FFFFFFFF"/>
                                     </Border.BorderBrush>
                                 </Border>
+                                <TextBox x:Name="PART_ContentHost"
+                                                        Opacity="0"
+                                                        Focusable="False"
+                                                        IsHitTestVisible="False"
+                                                        Content="{TemplateBinding Text}"
+                                                        Padding="2"/>
                                 <Border x:Name="watermark_decorator" BorderThickness="1">
                                     <Border.BorderBrush>
                                         <SolidColorBrush Color="#FFFFFFFF"/>
                                     </Border.BorderBrush>
-                                    <ContentControl x:Name="PART_Watermark"
+                                    <TextBlock x:Name="PART_Watermark"
                                                         Opacity="0"
                                                         Focusable="False"
                                                         IsHitTestVisible="False"
                                                         Content="{TemplateBinding Watermark}"
                                                         Padding="2"/>
                                 </Border>
-                                <ScrollViewer x:Name="PART_ContentHost" 
+                                <!--<ScrollViewer x:Name="PART_ContentHost" 
                                               Margin="0"
                                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />-->
+                                
                                 <Border x:Name="FocusVisual" BorderBrush="#FF45D6FA" CornerRadius="1" Opacity="0" IsHitTestVisible="False"/>
                             </Grid>
                         </Border>
@@ -324,25 +331,25 @@
                                     HorizontalContentAlignment="Stretch"
                                     VerticalContentAlignment="Stretch" 
                                     Focusable="{TemplateBinding Focusable}" />
-                                <Grid x:Name="PART_DisabledVisual" 
-                                      Opacity="0" 
-                                      IsHitTestVisible="False" 
-                                      Grid.Row="0" Grid.Column="0"
-                                      Grid.ColumnSpan="2">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Rectangle Grid.Row="0" Grid.Column="0" RadiusX="1" RadiusY="1" Fill="#A5FFFFFF"/>
-                                    <Rectangle Grid.Row="0" Grid.Column="1" RadiusX="1" RadiusY="1" Fill="#A5FFFFFF" Height="18" Width="19" Margin="3,0,3,0" />
-                                    <Overlay x:Name="PART_Popup" >
-                                    </Overlay>
-                                    <!--<Popup x:Name="PART_Popup" 
-                                           PlacementTarget="{Binding ElementName=PART_Button}"
-                                           Placement="Bottom" 
-                                           StaysOpen="False"
-                                           AllowsTransparency="True" />-->
-                                </Grid>
+                                    <Grid x:Name="PART_DisabledVisual" 
+                                        Opacity="0" 
+                                        IsHitTestVisible="False" 
+                                        Grid.Row="0" Grid.Column="0"
+                                        Grid.ColumnSpan="2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Rectangle Grid.Row="0" Grid.Column="0" RadiusX="1" RadiusY="1" Fill="#A5FFFFFF"/>
+                                        <Rectangle Grid.Row="0" Grid.Column="1" RadiusX="1" RadiusY="1" Fill="#A5FFFFFF" Height="18" Width="19" Margin="3,0,3,0" />
+                                        <Overlay x:Name="PART_Popup" >
+                                        </Overlay>
+                                        <!--<Popup x:Name="PART_Popup" 
+                                            PlacementTarget="{Binding ElementName=PART_Button}"
+                                            Placement="Bottom" 
+                                            StaysOpen="False"
+                                            AllowsTransparency="True" />-->
+                                    </Grid>
                             </Grid>
                         </Border.Child>
                     </Border>

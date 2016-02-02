@@ -68,6 +68,21 @@ module Fayde.Time {
              return gotoFunc("ButtonUnfocused");
         }
 
+        public SetContentInternal(value: string): void
+        {
+            this.Content = value;
+            /*
+            if (BindingOperations.GetBindingExpressionBase(this, ContentControl.ContentProperty) != null)
+            {
+                Content = value;
+            }
+            else
+            {
+                this._shouldCoerceContent = true;
+                this._coercedContent = value;
+                this.CoerceValue(ContentControl.ContentProperty);
+            }*/
+        }
 		
 	}
 }
